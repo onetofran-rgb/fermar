@@ -3,7 +3,7 @@
 export type UnidadNegocio = 'UN1' | 'UN2' | 'UN3' | 'todas';
 export type TipoCliente = 'panadero' | 'supermercado' | 'minorista';
 export type EstadoCliente = 'activo' | 'inactivo' | 'prospecto';
-export type TipoInteraccion = 'email' | 'whatsapp' | 'telefonico' | 'visita_directa';
+export type TipoInteraccion = 'email' | 'whatsapp' | 'telefonico' | 'visita_directa' | 'video_llamada';
 export type CanalEstado = 'enviado' | 'respondido' | 'sin_respuesta' | 'programado';
 export type EstadoPago = 'pagado' | 'pendiente' | 'vencido';
 export type TipoPlantilla = 'seguimiento' | 'oferta' | 'cobranza' | 'bienvenida';
