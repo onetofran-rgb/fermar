@@ -3,7 +3,10 @@ import { useUIStore } from '../stores/uiStore';
 import { useCalendarioStore } from '../stores/calendarioStore';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
-import { isToday, parseISO } from 'date-fns';
+import { isSameDay, parseISO } from 'date-fns';
+
+// Fecha de referencia del sistema (seed date)
+const HOY_SEED = new Date('2026-05-19');
 
 const UN_OPTIONS = [
   { value: 'todas', label: 'Todas las UN' },
@@ -16,8 +19,9 @@ export function Header() {
   const { tema, setTema, unidad_activa, setUnidadActiva } = useUIStore();
   const { eventos } = useCalendarioStore();
 
+  // Comparamos contra la fecha seed para que la demo siempre muestre eventos "hoy"
   const eventosHoy = eventos.filter(e => {
-    try { return isToday(parseISO(e.fecha)) && !e.completado; } catch { return false; }
+    try { return isSameDay(parseISO(e.fecha), HOY_SEED) && !e.completado; } catch { return false; }
   }).length;
 
   return (

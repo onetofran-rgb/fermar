@@ -19,6 +19,12 @@
   }
 }
 
+/* Animación de entrada para toasts */
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
