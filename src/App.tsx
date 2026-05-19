@@ -40,7 +40,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<DashboardPage />} />
           <Route path="clientes" element={<ClientesPage mostrarToast={mostrar} />} />
-          <Route path="interacciones" element={<InteraccionesPage />} />
+          <Route path="interacciones" element={<InteraccionesPage mostrarToast={mostrar} />} />
           <Route path="compras" element={<ComprasPage />} />
           <Route path="produccion" element={<ProduccionPage />} />
           <Route path="calendario" element={<CalendarioPage />} />
