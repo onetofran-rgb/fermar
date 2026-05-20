@@ -2,7 +2,7 @@
 import { clsx } from 'clsx';
 import {
   LayoutDashboard, Users, MessageSquare, ShoppingCart,
-  Factory, Calendar, BarChart2, Play, ChevronLeft, ChevronRight
+  Factory, Calendar, BarChart2, Play, ChevronLeft, ChevronRight, Settings
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/calendario', icon: Calendar, label: 'Calendario' },
   { to: '/reportes', icon: BarChart2, label: 'Reportes' },
   { to: '/demo', icon: Play, label: 'Demo' },
+  { to: '/configuracion', icon: Settings, label: 'Config' },
 ];
 
 export function Sidebar() {

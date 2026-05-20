@@ -8,7 +8,10 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { formatMoneda, formatFecha, LABEL_TIPO_INTERACCION } from '../../utils/formatters';
 import { Users, ShoppingCart, MessageSquare, Calendar, TrendingUp, AlertTriangle } from 'lucide-react';
-import { isToday, isThisWeek, isThisMonth, parseISO, subMonths, isSameMonth } from 'date-fns';
+import { parseISO, isSameDay, isSameMonth, isSameWeek, subMonths } from 'date-fns';
+
+// Fecha de referencia del sistema — todos los datos seed giran alrededor de esta fecha
+const HOY_SEED = new Date('2026-05-19');
 
 export function DashboardPage() {
   const { clientes, cargar: cargarClientes } = useClientesStore();
@@ -35,11 +38,12 @@ export function DashboardPage() {
     ? compras
     : compras.filter(c => clienteIdsPorUN.has(c.cliente_id));
 
+  // Usamos HOY_SEED como referencia para que los KPIs coincidan con los datos demo
   const ventasMes = comprasFiltradas
-    .filter(c => { try { return isThisMonth(parseISO(c.fecha)); } catch { return false; } })
+    .filter(c => { try { return isSameMonth(parseISO(c.fecha), HOY_SEED); } catch { return false; } })
     .reduce((s, c) => s + c.total, 0);
 
-  const mesAnterior = subMonths(new Date(), 1);
+  const mesAnterior = subMonths(HOY_SEED, 1);
   const ventasMesAnterior = comprasFiltradas
     .filter(c => { try { return isSameMonth(parseISO(c.fecha), mesAnterior); } catch { return false; } })
     .reduce((s, c) => s + c.total, 0);
@@ -48,8 +52,12 @@ export function DashboardPage() {
     ? ((ventasMes - ventasMesAnterior) / ventasMesAnterior * 100).toFixed(1)
     : null;
 
-  const eventosHoy = eventos.filter(e => { try { return isToday(parseISO(e.fecha)) && !e.completado; } catch { return false; } }).length;
-  const eventosSemana = eventos.filter(e => { try { return isThisWeek(parseISO(e.fecha)) && !e.completado; } catch { return false; } }).length;
+  const eventosHoy = eventos.filter(e => {
+    try { return isSameDay(parseISO(e.fecha), HOY_SEED) && !e.completado; } catch { return false; }
+  }).length;
+  const eventosSemana = eventos.filter(e => {
+    try { return isSameWeek(parseISO(e.fecha), HOY_SEED, { weekStartsOn: 1 }) && !e.completado; } catch { return false; }
+  }).length;
 
   const pagosVencidos = comprasFiltradas.filter(c => c.estado_pago === 'vencido');
   const pagosPendientes = comprasFiltradas.filter(c => c.estado_pago === 'pendiente');

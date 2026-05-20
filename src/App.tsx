@@ -8,6 +8,7 @@ import { ProduccionPage } from './modules/produccion/ProduccionPage';
 import { CalendarioPage } from './modules/calendario/CalendarioPage';
 import { ReportesPage } from './modules/reportes/ReportesPage';
 import { DemoPage } from './modules/demo/DemoPage';
+import { ConfiguracionPage } from './modules/configuracion/ConfiguracionPage';
 import { ToastContainer } from './components/ui/Toast';
 import { useToast } from './hooks/useToast';
 import { initializeSeedData } from './data/seedData';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="calendario" element={<CalendarioPage />} />
           <Route path="reportes" element={<ReportesPage />} />
           <Route path="demo" element={<DemoPage />} />
+          <Route path="configuracion" element={<ConfiguracionPage mostrarToast={mostrar} />} />
         </Route>
       </Routes>
       <ToastContainer toasts={toasts} cerrar={cerrar} />
