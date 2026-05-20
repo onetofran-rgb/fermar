@@ -10,6 +10,7 @@ import { useClientesStore } from "../../stores/clientesStore";
 import { useComprasStore } from "../../stores/comprasStore";
 import { useInteraccionesStore } from "../../stores/interaccionesStore";
 import { useProduccionStore } from "../../stores/produccionStore";
+import { useUIStore } from "../../stores/uiStore";
 import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -31,10 +32,11 @@ const COLOR_LINE  = "#3b82f6";
 // ─── Componente ───────────────────────────────────────────────────────────────
 
 export function ReportesPage() {
-  const { clientes, cargar: cargarClientes }           = useClientesStore();
-  const { compras, cargar: cargarCompras }             = useComprasStore();
-  const { interacciones, cargar: cargarInteracciones } = useInteraccionesStore();
-  const { cargar: cargarProductos }         = useProduccionStore();
+  const { clientes: todosClientes, cargar: cargarClientes } = useClientesStore();
+  const { compras: todasCompras, cargar: cargarCompras }    = useComprasStore();
+  const { interacciones, cargar: cargarInteracciones }      = useInteraccionesStore();
+  const { cargar: cargarProductos }                         = useProduccionStore();
+  const { unidad_activa }                                   = useUIStore();
 
   useEffect(() => {
     cargarClientes();
@@ -42,6 +44,16 @@ export function ReportesPage() {
     cargarInteracciones();
     cargarProductos();
   }, [cargarClientes, cargarCompras, cargarInteracciones, cargarProductos]);
+
+  // Aplicar filtro de unidad de negocio globalmente
+  const clientes = unidad_activa === "todas"
+    ? todosClientes
+    : todosClientes.filter(c => c.unidad_negocio === unidad_activa);
+
+  const clienteIds = new Set(clientes.map(c => c.id));
+  const compras = unidad_activa === "todas"
+    ? todasCompras
+    : todasCompras.filter(c => clienteIds.has(c.cliente_id));
 
   // ── 1. Ranking de clientes por volumen de compras ──
   const rankingClientes = useMemo(() => {
@@ -190,7 +202,9 @@ export function ReportesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reportes</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Reportes {unidad_activa !== "todas" && <span className="text-amber-500">— {unidad_activa}</span>}
+          </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Análisis de performance comercial y proyecciones</p>
         </div>
       </div>

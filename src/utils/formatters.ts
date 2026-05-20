@@ -1,4 +1,5 @@
-﻿import { format, parseISO, differenceInDays } from 'date-fns';
+﻿import { format, parseISO, differenceInDays, subDays } from 'date-fns';
+import type { Cliente, Compra } from '../types';
 import { es } from 'date-fns/locale';
 
 export function formatFecha(iso: string | null, fmt = 'dd/MM/yyyy'): string {
@@ -50,3 +51,40 @@ export const LABEL_ESTADO_PAGO: Record<string, string> = {
   pendiente: 'Pendiente',
   vencido: 'Vencido',
 };
+
+// ─── Score dinámico de cliente ────────────────────────────────────────────────
+// Calcula un puntaje de 0-100 basado en historial de compras y comportamiento
+const HOY_SCORE = new Date('2026-05-19');
+
+export function calcularScoreCliente(cliente: Cliente, compras: Compra[]): number {
+  const comprasCliente = compras.filter(c => c.cliente_id === cliente.id);
+
+  // Base según estado
+  let score = cliente.estado === 'activo' ? 40 : cliente.estado === 'prospecto' ? 20 : 10;
+
+  // Puntos por compras recientes
+  const hace30  = subDays(HOY_SCORE, 30);
+  const hace90  = subDays(HOY_SCORE, 90);
+  const hace180 = subDays(HOY_SCORE, 180);
+
+  for (const c of comprasCliente) {
+    try {
+      const fecha = parseISO(c.fecha);
+      if (fecha >= hace30)  { score += 8;  continue; }
+      if (fecha >= hace90)  { score += 4;  continue; }
+      if (fecha >= hace180) { score += 1; }
+    } catch { /* fecha inválida — ignorar */ }
+  }
+
+  // Puntos por confiabilidad de pago
+  const pagadas  = comprasCliente.filter(c => c.estado_pago === 'pagado').length;
+  const vencidas = comprasCliente.filter(c => c.estado_pago === 'vencido').length;
+  score += pagadas  * 3;
+  score -= vencidas * 8;
+
+  // Bonus por volumen: cada $50k facturado suma 2 puntos (máx 10)
+  const totalFacturado = comprasCliente.reduce((s, c) => s + c.total, 0);
+  score += Math.min(10, Math.floor(totalFacturado / 50000) * 2);
+
+  return Math.min(100, Math.max(0, Math.round(score)));
+}

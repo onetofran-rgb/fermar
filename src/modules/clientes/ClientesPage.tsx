@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { useClientesStore } from '../../stores/clientesStore';
+import { useComprasStore } from '../../stores/comprasStore';
 import { useUIStore } from '../../stores/uiStore';
 import type { Cliente } from '../../types';
 import { Button } from '../../components/ui/Button';
@@ -9,7 +10,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 import { ClienteForm } from './ClienteForm';
-import { formatFecha, LABEL_TIPO_CLIENTE, LABEL_ESTADO_CLIENTE } from '../../utils/formatters';
+import { formatFecha, LABEL_TIPO_CLIENTE, LABEL_ESTADO_CLIENTE, calcularScoreCliente } from '../../utils/formatters';
 import { Plus, Users, Star, Phone, Mail, LayoutGrid, List, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface Props {
@@ -39,7 +40,11 @@ const OPCIONES_ESTADO = [
 
 export function ClientesPage({ mostrarToast }: Props) {
   const { clientes, cargar, agregar, actualizar, eliminar } = useClientesStore();
+  const { compras, cargar: cargarCompras } = useComprasStore();
   const { unidad_activa } = useUIStore();
+
+  // Calcula el score dinámico de un cliente usando su historial de compras
+  const score = (c: Cliente) => calcularScoreCliente(c, compras);
 
   const [busqueda, setBusqueda] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
@@ -54,7 +59,7 @@ export function ClientesPage({ mostrarToast }: Props) {
   const [clienteEditando, setClienteEditando] = useState<Cliente | null>(null);
   const [clienteDetalle, setClienteDetalle] = useState<Cliente | null>(null);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { cargar(); cargarCompras(); }, [cargar, cargarCompras]);
   useEffect(() => { setPag(1); }, [busqueda, filtroTipo, filtroEstado, unidad_activa]);
 
   const filtrados = clientes
@@ -72,7 +77,7 @@ export function ClientesPage({ mostrarToast }: Props) {
     .sort((a, b) => {
       let va: string | number = a[sortKey] ?? '';
       let vb: string | number = b[sortKey] ?? '';
-      if (sortKey === 'score_cliente') { va = a.score_cliente; vb = b.score_cliente; }
+      if (sortKey === 'score_cliente') { va = score(a); vb = score(b); }
       const cmp = va < vb ? -1 : va > vb ? 1 : 0;
       return sortAsc ? cmp : -cmp;
     });
@@ -171,7 +176,7 @@ export function ClientesPage({ mostrarToast }: Props) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 text-amber-500" />
-                        <span className="font-medium text-gray-700 dark:text-gray-300">{c.score_cliente}</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{score(c)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">
@@ -232,7 +237,7 @@ export function ClientesPage({ mostrarToast }: Props) {
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Star className="h-3.5 w-3.5 text-amber-500" />
-                    Score: <span className="font-bold text-amber-600">{c.score_cliente}</span>
+                    Score: <span className="font-bold text-amber-600">{score(c)}</span>
                   </div>
                   <Badge variant="neutral">{c.unidad_negocio}</Badge>
                 </div>
@@ -268,7 +273,7 @@ export function ClientesPage({ mostrarToast }: Props) {
               <div><span className="font-medium text-gray-500">Tipo:</span> <span className="text-gray-900 dark:text-white">{LABEL_TIPO_CLIENTE[clienteDetalle.tipo]}</span></div>
               <div><span className="font-medium text-gray-500">UN:</span> <Badge variant="neutral">{clienteDetalle.unidad_negocio}</Badge></div>
               <div><span className="font-medium text-gray-500">Estado:</span> <Badge variant={ESTADO_BADGE[clienteDetalle.estado]}>{LABEL_ESTADO_CLIENTE[clienteDetalle.estado]}</Badge></div>
-              <div><span className="font-medium text-gray-500">Score:</span> <span className="font-bold text-amber-600">{clienteDetalle.score_cliente}/100</span></div>
+              <div><span className="font-medium text-gray-500">Score:</span> <span className="font-bold text-amber-600">{score(clienteDetalle)}/100</span></div>
               <div><span className="font-medium text-gray-500">Ciudad:</span> <span className="text-gray-900 dark:text-white">{clienteDetalle.ciudad} — {clienteDetalle.zona}</span></div>
               <div><span className="font-medium text-gray-500">Direccion:</span> <span className="text-gray-900 dark:text-white">{clienteDetalle.direccion}</span></div>
               <div><span className="font-medium text-gray-500">Alta:</span> <span className="text-gray-900 dark:text-white">{formatFecha(clienteDetalle.fecha_alta)}</span></div>
