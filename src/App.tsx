@@ -36,7 +36,7 @@ export default function App() {
   }, [tema]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/fermar">
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<DashboardPage />} />
